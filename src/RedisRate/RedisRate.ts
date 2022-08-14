@@ -1,9 +1,9 @@
-import { RedisManager } from '@bemit/redis/RedisManager'
+import { RedisConnection } from '@bemit/redis/RedisConnection'
 
 export class RedisRate {
-    private readonly redis: RedisManager
+    private readonly redis: RedisConnection
 
-    constructor(redis: RedisManager) {
+    constructor(redis: RedisConnection) {
         this.redis = redis
     }
 
