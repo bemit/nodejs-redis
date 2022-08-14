@@ -1,6 +1,6 @@
 {
     "name": "@bemit/redis",
-    "version": "0.0.7",
+    "version": "0.1.0-alpha.0",
     "description": "NodeJS redis connection helper, with caching and rating tools.",
     "homepage": "https://bemit.codes",
     "author": {
@@ -21,6 +21,7 @@
     "exports": {
         ".": "./index.js",
         "./RedisCached": "./RedisCached/index.js",
+        "./RedisConnection": "./RedisConnection/index.js",
         "./RedisManager": "./RedisManager/index.js",
         "./RedisRate": "./RedisRate/index.js"
     },
