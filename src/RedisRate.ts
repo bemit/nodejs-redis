@@ -11,6 +11,8 @@ export class RedisRate {
         const redis = await this.redis.client()
         const rateLast = await redis.get(key)
         let rateNext: number
+        // todo: check rating example again, maybe switch to expires-at for better atomicity,
+        //       instead of actually trying to make it "x from first rate", it would may be faster to just rely on "per-min/per-x-min" using server time slices
         if(rateLast) {
             if((Number(rateLast) + 1) > limit) {
                 return Promise.resolve(Number(rateLast) + 1)
