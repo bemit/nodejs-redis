@@ -1,18 +1,19 @@
-import { createClient } from 'redis'
+import { createClient, RedisDefaultModules } from 'redis'
 import {
     RedisModules, RedisFunctions, RedisScripts,
     RedisClientOptions, RedisClientType,
 } from '@redis/client'
 
-export class RedisConnection<M extends RedisModules = RedisModules, F extends RedisFunctions = RedisFunctions, S extends RedisScripts = RedisScripts> {
+export class RedisConnection<M extends RedisModules = RedisDefaultModules, F extends RedisFunctions = Record<string, never>, S extends RedisScripts = Record<string, never>> {
     protected readonly redis: RedisClientType<M, F, S>
     protected connected: boolean = false
-    public readonly database: number
+    public readonly id: string | number
 
     constructor(
         init: RedisClientOptions<M, F, S> & { database: number },
+        id?: string | number,
     ) {
-        this.database = init.database
+        this.id = typeof id === 'undefined' ? init.database : id
         this.redis = createClient(init)
     }
 
@@ -25,8 +26,13 @@ export class RedisConnection<M extends RedisModules = RedisModules, F extends Re
         return this
     }
 
+    public off(eventName: string, listener: (...args: any[]) => void): RedisConnection<M, F, S> {
+        this.redis.off(eventName, listener)
+        return this
+    }
+
     private async connect(): Promise<void> {
-        if(this.connected) return
+        if(this.isConnected) return
         this.connected = true
         await this.redis.connect()
     }
@@ -40,7 +46,7 @@ export class RedisConnection<M extends RedisModules = RedisModules, F extends Re
      * Gracefully close a client's connection to redis.
      */
     public async quit(): Promise<void> {
-        if(!this.connected) return
+        if(!this.isConnected) return
         await this.redis.quit()
         this.connected = false
     }
@@ -49,7 +55,7 @@ export class RedisConnection<M extends RedisModules = RedisModules, F extends Re
      * Forcibly close a client's connection to redis immediately.
      */
     public async disconnect(): Promise<void> {
-        if(!this.connected) return
+        if(!this.isConnected) return
         await this.redis.disconnect()
         this.connected = false
     }

@@ -1,6 +1,9 @@
 import { RedisConnection } from '@bemit/redis/RedisConnection'
 import { nanoid } from 'nanoid'
 
+/**
+ * @deprecated will be removed or rewritten completely
+ */
 export class RedisCached {
     private readonly redis: RedisConnection
 
@@ -26,11 +29,6 @@ export class RedisCached {
         let cached: any
         lockId = clusterLock ? lockId || nanoid(12) : undefined
         if(clusterLock) {
-            // cached = await redis.SET('cached:' + key, '_lock.' + id, {
-            //     NX: true,
-            //     GET: true,
-            //     //EX: 120,
-            // })
             const lock = await redis.SET('cached:' + key, '_lock.' + lockId, {
                 NX: true,
                 EX: 120,
@@ -40,8 +38,6 @@ export class RedisCached {
             } else {
                 cached = await redis.get('cached:' + key)
             }
-            //cached = await redis.sendCommand(['SET', 'cached:' + key, '_lock.' + id, 'EX', '120', 'NX']).then(r => r || '_lock.' + id)
-            //cached = await redis.SET('cached:' + key, '_lock.' + id, 'EX', 120, 'NX', 'GET')0
         } else {
             cached = await redis.get('cached:' + key)
         }
@@ -50,6 +46,8 @@ export class RedisCached {
             if(cached !== '_lock.' + lockId) {
                 cached = await new Promise((resolve) => {
                     let i = 0
+                    // todo: using interval brings edge-cases in NodeJS which are not handleable like currently implemented,
+                    //       e.g. regarding closing of server and blocking shutdown
                     const iVal = setInterval(async() => {
                         const tmpCached = await redis.get('cached:' + key)
                         if((!tmpCached || tmpCached.startsWith('_lock.')) && i >= lockMaxChecks) {
@@ -78,14 +76,12 @@ export class RedisCached {
             if(lockMisses) {
                 redis.set('cached:' + key, '_miss', {
                     EX: lockMisses,
-                    //NX: true,
                 }).then().catch()
             }
             return undefined
         }
         redis.set('cached:' + key, next.value, {
             EX: next.ex,
-            //NX: nx ? true : undefined,
         }).then().catch()
         return next.raw
     }
