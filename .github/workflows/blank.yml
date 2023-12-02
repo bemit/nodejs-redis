@@ -63,6 +63,6 @@ jobs:
                     cp package.json build/
                     cp README.md build/
                     cp LICENSE build/
-                    npm publish build
+                    npm publish ./build
                 env:
                     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
